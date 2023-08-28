@@ -1,21 +1,32 @@
+let maxPage
+let page = 1
+let infiniteScroll
+
 searchFormBtn.addEventListener('click', () => {
 
     location.hash = '#search=' + searchFormInput.value
 })
 trendingBtn.addEventListener('click', () => location.hash = '#trends')
 arrowBtn.addEventListener('click', () => {
-    if (document.domain !== 'localhost'){
+    /*if (document.domain !== 'localhost'){
         location.hash = '#home'
     }else{
         history.back()
-    }
+    }*/
+
+    history.back()
 })
 
 window.addEventListener('load', navigator, false)
 window.addEventListener('hashchange', navigator, false)
+window.addEventListener('scroll', infiniteScroll, false)
 
 function navigator(){
-    console.log({location})
+
+    if(infiniteScroll) {
+        window.removeEventListener('scroll', infiniteScroll)
+        infiniteScroll = undefined
+    }
 
     if (location.hash.startsWith('#trends')){
         TrendsPage()
@@ -30,11 +41,13 @@ function navigator(){
     }
 
     window.scrollTo(0, 0);
+
+    if (infiniteScroll){
+        window.addEventListener('scroll', infiniteScroll, {passive: false})
+    }
 }
 
 function HomePage(){
-    console.log('Home!!!')
-
     headerSection.classList.remove('header-container--long')
     headerSection.style.background = ''
     arrowBtn.classList.add('inactive')
@@ -42,6 +55,8 @@ function HomePage(){
     headerTitle.classList.remove('inactive')
     headerCategoryTitle.classList.add('inactive')
     searchForm.classList.remove('inactive')
+
+    likedMoviesSection.classList.remove('inactive')
     trendingPreviewSection.classList.remove('inactive')
     categoriesPreviewSection.classList.remove('inactive')
     genericSection.classList.add('inactive')
@@ -49,11 +64,10 @@ function HomePage(){
 
     getTrendingMoviesPreview()
     getCategoriesPreview()
+    GetLikedMovies()
 }
 
 function TrendsPage(){
-    console.log('Trends!!!')
-
     headerSection.classList.remove('header-container--long')
     headerSection.style.background = ''
     arrowBtn.classList.remove('inactive')
@@ -61,6 +75,8 @@ function TrendsPage(){
     headerTitle.classList.add('inactive')
     headerCategoryTitle.classList.remove('inactive')
     searchForm.classList.add('inactive')
+
+    likedMoviesSection.classList.add('inactive')
     trendingPreviewSection.classList.add('inactive')
     categoriesPreviewSection.classList.add('inactive')
     genericSection.classList.remove('inactive')
@@ -68,11 +84,11 @@ function TrendsPage(){
 
     headerCategoryTitle.innerHTML = 'Tendencias'
     GetTrendingMovies()
+
+    infiniteScroll = GetPaginatedTrendingMovies
 }
 
 function SearchPage(){
-    console.log('Home!!!')
-
     headerSection.classList.remove('header-container--long')
     headerSection.style.background = ''
     arrowBtn.classList.remove('inactive')
@@ -80,6 +96,8 @@ function SearchPage(){
     headerTitle.classList.add('inactive')
     headerCategoryTitle.classList.add('inactive')
     searchForm.classList.remove('inactive')
+
+    likedMoviesSection.classList.add('inactive')
     trendingPreviewSection.classList.add('inactive')
     categoriesPreviewSection.classList.add('inactive')
     genericSection.classList.remove('inactive')
@@ -87,18 +105,19 @@ function SearchPage(){
 
     const [_, query] = location.hash.split('=')
     GetMoviesBySearch(query)
+
+    infiniteScroll = GetPaginatedMoviesBySearch(query)
 }
 
 function MoviePage(){
-    console.log('Home!!!')
-
     headerSection.classList.add('header-container--long')
-    /*headerSection.style.background = ''*/
     arrowBtn.classList.remove('inactive')
     arrowBtn.classList.add('header-arrow--white')
     headerTitle.classList.add('inactive')
     headerCategoryTitle.classList.add('inactive')
     searchForm.classList.add('inactive')
+
+    likedMoviesSection.classList.add('inactive')
     trendingPreviewSection.classList.add('inactive')
     categoriesPreviewSection.classList.add('inactive')
     genericSection.classList.add('inactive')
@@ -109,8 +128,6 @@ function MoviePage(){
 }
 
 function CategoriesPage(){
-    console.log('Home!!!')
-
     headerSection.classList.remove('header-container--long')
     headerSection.style.background = ''
     arrowBtn.classList.remove('inactive')
@@ -118,6 +135,8 @@ function CategoriesPage(){
     headerTitle.classList.add('inactive')
     headerCategoryTitle.classList.remove('inactive')
     searchForm.classList.add('inactive')
+
+    likedMoviesSection.classList.add('inactive')
     trendingPreviewSection.classList.add('inactive')
     categoriesPreviewSection.classList.add('inactive')
     genericSection.classList.remove('inactive')
@@ -129,4 +148,6 @@ function CategoriesPage(){
     headerCategoryTitle.innerHTML = categoryName
 
     GetMoviesByCategory(categoryId)
+
+    infiniteScroll = GetPaginatedMoviesByCategory(categoryId)
 }
